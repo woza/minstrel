@@ -1,0 +1,61 @@
+Input controls:
+
+Navigation:
+===========
+B = Back (touch button)
+F = Forward (touch button)
+E = Enter (touch button) 
+L = Leave (touch button)
+
+Volume:
+=======
+
+Play/Stop
+=========
+P
+
+
+States: {Halted, Playing, Paused, Stepping, Started}
+
+Actions:
+  next - select next name in current directory (wrapping at end), display it on screen
+  prev - select previous name in current directory (wrapping at end), display it on screen
+  launch - launch backend music player playing currently selected file
+  pause - send command to backend music player to pause
+  stop - Stop back-end music player process
+  enter - enter the currently selected directory, record cursor position in stack 
+  leave - walk one level back up the directory tree, restore cursor
+          position.  If already at top level, this is a no-op
+  rewind - send command to backend music player to return to begining
+  
+START: (Halted,  current directory set to top-level directory, first entry is selected)
+
+(Halted, _ selected)      -> Forward  -> (Halted, next)
+(Halted, _ selected)      -> Backward -> (Halted, prev)
+(Halted, _ selected)      -> Leave    -> (Halted, leave)
+(Halted, file selected)   -> Enter    -> (Halted, no-op)
+(Halted, dir selected)    -> Enter    -> (Halted, enter subdir)
+(Halted, file selected)   -> Play     -> (Started, launch)
+(Halted, dir selected)    -> Play     -> (Halted, no-op)
+
+(Started, file selected) -> <5 seconds elapsed> -> (Playing, no-op)
+(Started, file selected) -> Backward -> (Started, prev + launch)
+(Playing, file selected) -> Backward -> (Started, rewind)
+
+(Playing, file selected) -> Play     -> (Paused, pause)
+(Playing, file selected) -> Leave    -> (Halted, prev)
+(Playing, file selected) -> Enter    -> (Playing, no-op)
+(Playing, file selected) -> Forward  -> (Stepping, stop + next)
+(Stepping, file selected)-> <auto>   -> (Started, launch)
+(Stepping, dir selected) -> <auto>   -> (Halted, no-op)
+(Playing, dir selected)  -> CANNOT HAPPEN
+
+(Paused, file selected)   -> Forward  -> (Halted, next)
+(Paused, file selected)   -> Backward -> (Halted, prev)
+(Paused, file selected)   -> Enter    -> (Paused, no-op)
+(Paused, file selected)   -> Leave    -> (Halted, leave)
+
+
+
+(Playing, file selected)  -> Play     -> (Paused, pause)
+
